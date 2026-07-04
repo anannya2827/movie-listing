@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineVault | Movie Browser</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">🎬 CineVault</div>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search movies by title (e.g., Batman, Marvel)...">
+        </div>
+        <div class="nav-tabs">
+            <button id="nav-search" class="active-tab">Browse</button>
+            <button id="nav-favorites">Favorites (<span id="fav-count">0</span>)</button>
+        </div>
+    </header>
+
+    <main>
+        <h2 id="view-title">Trending & Searches</h2>
+        <!-- Target container where app.js will dynamically paint elements -->
+        <div id="movie-grid" class="grid-layout"></div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
