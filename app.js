@@ -14,9 +14,13 @@ const movieModal = document.getElementById('movie-modal');
 const modalBody = document.getElementById('modal-body-data');
 const closeModalBtn = document.querySelector('.close-modal');
 
+// Initialize view
 updateFavoriteBadge();
-performSearch('Interstellar'); 
+performSearch('Spiderman'); // Set superhero blockbuster as default baseline view
 
+/* ==========================================
+   1. API Core Layer
+   ========================================== */
 async function performSearch(query) {
     if (!query) return;
     movieGrid.innerHTML = '<div class="message">Curating exquisite selections...</div>';
@@ -38,7 +42,7 @@ async function performSearch(query) {
 async function showMovieDetails(imdbID) {
     modalBody.innerHTML = '<div class="message">Decrypting cinematic files...</div>';
     movieModal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; // Lock background scroll elegantly
+    document.body.style.overflow = 'hidden'; // Lock background scroll seamlessly
     
     try {
         const response = await fetch(`${BASE_URL}i=${imdbID}&plot=full`);
@@ -74,6 +78,9 @@ async function showMovieDetails(imdbID) {
     }
 }
 
+/* ==========================================
+   2. DOM Grid Interface Builder
+   ========================================== */
 function renderGrid(movies) {
     movieGrid.innerHTML = '';
     
@@ -113,12 +120,15 @@ function renderGrid(movies) {
 
 function displayFavoritesPage() {
     if (favoriteMovies.length === 0) {
-        movieGrid.innerHTML = '<div class="message">Your personalized collection is curated empty. Click heart icons to build.</div>';
+        movieGrid.innerHTML = '<div class="message">Your personalized collection is currently empty. Click heart icons to build.</div>';
     } else {
         renderGrid(favoriteMovies);
     }
 }
 
+/* ==========================================
+   3. Persistence & Interaction State Caching 
+   ========================================== */
 function handleFavoriteToggle(e) {
     const btn = e.currentTarget;
     const currentMovie = {
@@ -156,9 +166,12 @@ function escapeHTML(str) {
 
 function closeModal() {
     movieModal.classList.add('hidden');
-    document.body.style.overflow = ''; // Restore structural canvas scrolling
+    document.body.style.overflow = ''; // Restore underlying scrolling layout
 }
 
+/* ==========================================
+   4. Controller Event Handlers
+   ========================================== */
 let searchTimeout;
 searchInput.addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
@@ -192,6 +205,6 @@ function switchToSearchView() {
     if(searchInput.value.trim().length > 2) {
         performSearch(searchInput.value.trim());
     } else {
-        performSearch('Interstellar');
+        performSearch('Spiderman'); // Fallback baseline when input is empty
     }
 }
