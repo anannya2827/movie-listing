@@ -3,26 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineVault | Movie Browser</title>
+    <title>CineVault Pro | Ultimate Movie Browser</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <div class="logo">🎬 CineVault</div>
+        <div class="logo">🎬 CineVault <span class="pro-badge">PRO</span></div>
         <div class="search-box">
-            <input type="text" id="search-input" placeholder="Search movies by title (e.g., Batman, Marvel)...">
+            <input type="text" id="search-input" placeholder="Type a title (e.g., Inception, Avengers)...">
         </div>
         <div class="nav-tabs">
-            <button id="nav-search" class="active-tab">Browse</button>
-            <button id="nav-favorites">Favorites (<span id="fav-count">0</span>)</button>
+            <button id="nav-search" class="active-tab">🏠 Browse</button>
+            <button id="nav-favorites">❤️ Favorites (<span id="fav-count">0</span>)</button>
         </div>
     </header>
 
     <main>
-        <h2 id="view-title">Trending & Searches</h2>
-        <!-- Target container where app.js will dynamically paint elements -->
+        <h2 id="view-title">Trending Discoveries</h2>
         <div id="movie-grid" class="grid-layout"></div>
     </main>
+
+    <div id="movie-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div id="modal-body-data"></div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
