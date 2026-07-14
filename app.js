@@ -1,29 +1,29 @@
 const API_KEY = '39321ba3';
 const BASE_URL = `https://www.omdbapi.com/?apikey=${API_KEY}&`;
 
-// State tracking variables
-let currentView = 'search'; // 'search' or 'favorites'
+let currentView = 'search';
 let favoriteMovies = JSON.parse(localStorage.getItem('vaultFavorites')) || [];
 
-// DOM Element references
+// DOM Element targets
 const searchInput = document.getElementById('search-input');
 const movieGrid = document.getElementById('movie-grid');
 const viewTitle = document.getElementById('view-title');
 const navSearchBtn = document.getElementById('nav-search');
 const navFavBtn = document.getElementById('nav-favorites');
 const favCountSpan = document.getElementById('fav-count');
+const movieModal = document.getElementById('movie-modal');
+const modalBody = document.getElementById('modal-body-data');
+const closeModalBtn = document.querySelector('.close-modal');
 
-// Initialize interface items
 updateFavoriteBadge();
-performSearch('Matrix'); // Pre-populate window with something clean on launch
+performSearch('Batman'); // Startup query grid setup
 
 /* ==========================================
-   1. Data Fetch & API Management
+   1. API Core Layer
    ========================================== */
 async function performSearch(query) {
     if (!query) return;
-    
-    movieGrid.innerHTML = '<div class="message">Searching the vault...</div>';
+    movieGrid.innerHTML = '<div class="message">Opening the archives...</div>';
     
     try {
         const response = await fetch(`${BASE_URL}s=${encodeURIComponent(query)}`);
@@ -32,29 +32,68 @@ async function performSearch(query) {
         if (data.Response === "True") {
             renderGrid(data.Search);
         } else {
-            movieGrid.innerHTML = `<div class="message">No titles matched "${query}"</div>`;
+            movieGrid.innerHTML = `<div class="message">No cinematic titles found for "${query}"</div>`;
         }
     } catch (error) {
-        console.error("Networking error occurred:", error);
-        movieGrid.innerHTML = '<div class="message">Failed to reach storage servers. Check network.</div>';
+        movieGrid.innerHTML = '<div class="message">Network synchronization failure.</div>';
+    }
+}
+
+// NEW: Fetch deep specific information item for your movie details view/modal page
+async function showMovieDetails(imdbID) {
+    modalBody.innerHTML = '<div class="message">Loading classified files...</div>';
+    movieModal.classList.remove('hidden');
+    
+    try {
+        const response = await fetch(`${BASE_URL}i=${imdbID}&plot=full`);
+        const movie = await response.json();
+        
+        if (movie.Response === "True") {
+            const posterImg = movie.Poster !== 'N/A' ? movie.Poster : 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=300';
+            
+            modalBody.innerHTML = `
+                <div class="details-layout">
+                    <div>
+                        <img class="details-poster" src="${posterImg}" alt="${movie.Title}">
+                    </div>
+                    <div class="details-meta">
+                        <h2>${movie.Title}</h2>
+                        <div class="meta-tags">
+                            <span class="tag rating">⭐ ${movie.imdbRating}</span>
+                            <span class="tag">${movie.Rated}</span>
+                            <span class="tag">${movie.Runtime}</span>
+                            <span class="tag">${movie.Genre}</span>
+                        </div>
+                        <p class="details-plot">${movie.Plot}</p>
+                        <div class="detail-line"><strong>Director:</strong> ${movie.Director}</div>
+                        <div class="detail-line"><strong>Writers:</strong> ${movie.Writer}</div>
+                        <div class="detail-line"><strong>Stars:</strong> ${movie.Actors}</div>
+                        <div class="detail-line"><strong>Released:</strong> ${movie.Released} (${movie.Country})</div>
+                        <div class="detail-line"><strong>Box Office:</strong> ${movie.BoxOffice || 'N/A'}</div>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        modalBody.innerHTML = '<div class="message">Could not load files.</div>';
     }
 }
 
 /* ==========================================
-   2. DOM Engine & Rendering Functions
+   2. DOM Grid Interface Builder
    ========================================== */
 function renderGrid(movies) {
     movieGrid.innerHTML = '';
     
     movies.forEach(movie => {
-        // Evaluate if this specific node matches internal storage elements
         const isFavorited = favoriteMovies.some(fav => fav.imdbID === movie.imdbID);
-        
         const card = document.createElement('div');
         card.className = 'movie-card';
         
-        // Use a safe placeholder graphic if external source poster returns empty
-        const posterImg = movie.Poster !== 'N/A' ? movie.Poster : 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=300&auto=format&fit=crop';
+        // Let clicking anywhere on the layout card trigger the detailed page data view
+        card.setAttribute('onclick', `showMovieDetails('${movie.imdbID}')`);
+        
+        const posterImg = movie.Poster !== 'N/A' ? movie.Poster : 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=300';
         
         card.innerHTML = `
             <div class="poster-wrapper">
@@ -63,35 +102,35 @@ function renderGrid(movies) {
             <div class="movie-info">
                 <h3 title="${movie.Title}">${movie.Title}</h3>
                 <p>${movie.Year} • ${movie.Type.toUpperCase()}</p>
-                <button 
-                    class="fav-btn ${isFavorited ? 'is-fav' : ''}" 
-                    data-id="${movie.imdbID}"
-                    data-title="${escapeHTML(movie.Title)}"
-                    data-year="${movie.Year}"
-                    data-poster="${posterImg}"
-                    data-type="${movie.Type}">
-                    ${isFavorited ? '❤️ Remove' : '⭐ Favorite'}
-                </button>
+                <div class="action-row">
+                    <button class="btn info-btn">View Details</button>
+                    <button 
+                        class="btn fav-btn ${isFavorited ? 'is-fav' : ''}" 
+                        data-id="${movie.imdbID}"
+                        data-title="${escapeHTML(movie.Title)}"
+                        data-year="${movie.Year}"
+                        data-poster="${posterImg}"
+                        data-type="${movie.Type}"
+                        onclick="event.stopPropagation(); handleFavoriteToggle(event);">
+                        ${isFavorited ? '❤️' : '⭐'}
+                    </button>
+                </div>
             </div>
         `;
         movieGrid.appendChild(card);
     });
-
-    // Event Delegation: Bind single click handler on cards layout row
-    const buttons = movieGrid.querySelectorAll('.fav-btn');
-    buttons.forEach(btn => btn.addEventListener('click', handleFavoriteToggle));
 }
 
 function displayFavoritesPage() {
     if (favoriteMovies.length === 0) {
-        movieGrid.innerHTML = '<div class="message">Your vault is empty. Items you star appear here.</div>';
+        movieGrid.innerHTML = '<div class="message">Your personalized vault is currently empty.</div>';
     } else {
         renderGrid(favoriteMovies);
     }
 }
 
 /* ==========================================
-   3. Client-Side State & LocalStorage 
+   3. Persistence & Interaction State Caching 
    ========================================== */
 function handleFavoriteToggle(e) {
     const btn = e.currentTarget;
@@ -106,23 +145,16 @@ function handleFavoriteToggle(e) {
     const targetIndex = favoriteMovies.findIndex(fav => fav.imdbID === currentMovie.imdbID);
 
     if (targetIndex > -1) {
-        // Found matching item inside storage: Remove it
         favoriteMovies.splice(targetIndex, 1);
         btn.classList.remove('is-fav');
-        btn.innerHTML = '⭐ Favorite';
-        
-        // Dynamic cleanup optimization when running operations directly inside favorites tab
-        if (currentView === 'favorites') {
-            displayFavoritesPage();
-        }
+        btn.innerHTML = '⭐';
+        if (currentView === 'favorites') displayFavoritesPage();
     } else {
-        // New signature detected: Cache object locally
         favoriteMovies.push(currentMovie);
         btn.classList.add('is-fav');
-        btn.innerHTML = '❤️ Remove';
+        btn.innerHTML = '❤️';
     }
 
-    // Update global variables inside runtime state environments
     localStorage.setItem('vaultFavorites', JSON.stringify(favoriteMovies));
     updateFavoriteBadge();
 }
@@ -131,30 +163,28 @@ function updateFavoriteBadge() {
     favCountSpan.textContent = favoriteMovies.length;
 }
 
-// Security sanitation pattern to isolate special strings passing into layout attributes
 function escapeHTML(str) {
     return str.replace(/'/g, "&apos;").replace(/"/g, "&quot;");
 }
 
 /* ==========================================
-   4. Application Controller Event Listeners
+   4. Controller Event Handlers
    ========================================== */
-// Process queries via input keystrokes using a 400ms software debounce mechanism
 let searchTimeout;
 searchInput.addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
-    
-    // Switch views to visual panel context if active changes break flow sequence state
-    if (currentView !== 'search') {
-        switchToSearchView();
-    }
+    if (currentView !== 'search') switchToSearchView();
     
     const value = e.target.value.trim();
     if (value.length > 2) {
-        searchTimeout = setTimeout(() => {
-            performSearch(value);
-        }, 400);
+        searchTimeout = setTimeout(() => performSearch(value), 400);
     }
+});
+
+// Close Modal Bindings
+closeModalBtn.addEventListener('click', () => movieModal.classList.add('hidden'));
+window.addEventListener('click', (e) => {
+    if (e.target === movieModal) movieModal.classList.add('hidden');
 });
 
 navSearchBtn.addEventListener('click', switchToSearchView);
@@ -162,7 +192,7 @@ navFavBtn.addEventListener('click', () => {
     currentView = 'favorites';
     navSearchBtn.classList.remove('active-tab');
     navFavBtn.classList.add('active-tab');
-    viewTitle.textContent = "Your Favorites Vault";
+    viewTitle.textContent = "Your Curated Collection";
     displayFavoritesPage();
 });
 
@@ -170,10 +200,10 @@ function switchToSearchView() {
     currentView = 'search';
     navFavBtn.classList.remove('active-tab');
     navSearchBtn.classList.add('active-tab');
-    viewTitle.textContent = "Trending & Searches";
+    viewTitle.textContent = "Trending Discoveries";
     if(searchInput.value.trim().length > 2) {
         performSearch(searchInput.value.trim());
     } else {
-        performSearch('Matrix'); // Standard dynamic layout view fallback
+        performSearch('Batman');
     }
 }
