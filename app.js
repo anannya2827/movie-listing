@@ -16,7 +16,7 @@ const closeModalBtn = document.querySelector('.close-modal');
 
 // Initialize view
 updateFavoriteBadge();
-performSearch('Spiderman'); // Set superhero blockbuster as default baseline view
+performSearch('Avengers'); // CHANGED: Automatically loads Avengers titles on initial application launch
 
 /* ==========================================
    1. API Core Layer
@@ -205,6 +205,6 @@ function switchToSearchView() {
     if(searchInput.value.trim().length > 2) {
         performSearch(searchInput.value.trim());
     } else {
-        performSearch('Spiderman'); // Fallback baseline when input is empty
+        performSearch('Avengers'); // CHANGED: Fallback baseline when search text is cleared
     }
 }
