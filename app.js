@@ -4,6 +4,7 @@ const BASE_URL = `https://www.omdbapi.com/?apikey=${API_KEY}&`;
 let currentView = 'search';
 let favoriteMovies = JSON.parse(localStorage.getItem('vaultFavorites')) || [];
 
+const logoHome = document.getElementById('logo-home'); // NEW: Logo element target identifier selector
 const searchInput = document.getElementById('search-input');
 const movieGrid = document.getElementById('movie-grid');
 const viewTitle = document.getElementById('view-title');
@@ -16,7 +17,7 @@ const closeModalBtn = document.querySelector('.close-modal');
 
 // Initialize view
 updateFavoriteBadge();
-performSearch('Avengers'); // CHANGED: Automatically loads Avengers titles on initial application launch
+performSearch('Avengers'); 
 
 /* ==========================================
    1. API Core Layer
@@ -42,7 +43,7 @@ async function performSearch(query) {
 async function showMovieDetails(imdbID) {
     modalBody.innerHTML = '<div class="message">Decrypting cinematic files...</div>';
     movieModal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; // Lock background scroll seamlessly
+    document.body.style.overflow = 'hidden'; 
     
     try {
         const response = await fetch(`${BASE_URL}i=${imdbID}&plot=full`);
@@ -166,7 +167,7 @@ function escapeHTML(str) {
 
 function closeModal() {
     movieModal.classList.add('hidden');
-    document.body.style.overflow = ''; // Restore underlying scrolling layout
+    document.body.style.overflow = ''; 
 }
 
 /* ==========================================
@@ -181,6 +182,13 @@ searchInput.addEventListener('input', (e) => {
     if (value.length > 2) {
         searchTimeout = setTimeout(() => performSearch(value), 400);
     }
+});
+
+// NEW: Logo homepage return event intercept listener hook
+logoHome.addEventListener('click', (e) => {
+    e.preventDefault(); 
+    searchInput.value = ''; // Flush search input text display box clean
+    switchToSearchView();   // Re-route framework views down to trending base
 });
 
 closeModalBtn.addEventListener('click', closeModal);
@@ -205,6 +213,6 @@ function switchToSearchView() {
     if(searchInput.value.trim().length > 2) {
         performSearch(searchInput.value.trim());
     } else {
-        performSearch('Avengers'); // CHANGED: Fallback baseline when search text is cleared
+        performSearch('Avengers'); 
     }
 }
